@@ -14,9 +14,10 @@ class Player(pygame.sprite.Sprite):
     last_shot:  int
     radius: int
     shoot_sound: pygame.mixer.Sound
+    shot_cooldown: int
 
 
-    def __init__(self, sound_file):
+    def __init__(self, sound_file, image):
 
         # Konstruktor Aufruf 
         super().__init__()
@@ -26,15 +27,17 @@ class Player(pygame.sprite.Sprite):
         self.armour = 1
         self.last_shot = 0
         self.radius = 350
-        self.damage = 3.23
+        self.damage = 3
         self.shoot_sound = pygame.mixer.Sound(sound_file)
+        self.shot_cooldown = 300
         
         # Bestimmt die Oberfläche bzw. quasi die Hitbox des Sprites
-        self.image = pygame.Surface((50, 50))
+        self.image = pygame.image.load(image)
+        self.image = pygame.transform.scale(self.image, (100, 100))
         # Bestimmt wie es angezeigt wird.
         self.rect = self.image.get_rect()
 
-        pygame.draw.rect(self.image, "green", ((0, 0),(50, 50)), 0)
+        # pygame.draw.rect(self.image, "green", ((0, 0),(50, 50)), 0)
         
     def update(self):
         if self.health <= 0:
@@ -47,7 +50,7 @@ class Player(pygame.sprite.Sprite):
             self.health = self.health + (self.health * 0.035)
             self.coins -= 20
         else:
-            print("Insufficient funds.")
+            print("[INFO]: INSUFFICIENT FUNDS")
 
     def upgrade_armour(self):
 
@@ -57,14 +60,21 @@ class Player(pygame.sprite.Sprite):
             self.armour = min(self.armour + (self.armour * 0.012), 100)
             self.coins -= 25
         else:
-            print("Insufficient funds.")
+            print("[INFO]: INSUFFICIENT FUNDS")
 
     def upgrade_damage(self):
         if self.coins > 10:
-            self.damage *= 1.04
+            self.damage *= 1.15
             self.coins -= 10
         else:
-            print("Insufficient funds.")
+            print("[INFO]: INSUFFICIENT FUNDS")
+
+    def upgrade_attack_speed(self):
+        if self.coins > 25:
+            self.shot_cooldown -= 10
+            self.coins -= 25
+        else:
+            print("[INFO]: INSUFFICIENT FUNDS")
 
     def take_damage(self, amount):
         damage_taken =  amount - (amount * (self.armour / 100))
@@ -78,7 +88,7 @@ class Player(pygame.sprite.Sprite):
     def shoot(self, enemy_group, bullet_group):
         nearest_enemy = self.check_nearest_enemy(enemy_group)
         if nearest_enemy is not None:
-            if(pygame.time.get_ticks() - self.last_shot) > SHOT_COOLDOWN:
+            if(pygame.time.get_ticks() - self.last_shot) > self.shot_cooldown:
                 bullet = Bullet(nearest_enemy, self, self.rect.centerx, self.rect.centery, self.damage)
                 self.shoot_sound.play()
                 bullet_group.add(bullet)

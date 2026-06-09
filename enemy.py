@@ -17,9 +17,9 @@ class Enemy(pygame.sprite.Sprite):
 
         super().__init__()
 
-        self.health = 3 * (1.003 **  GAME_DIFFICULTY)
-        self.speed = 1.9 * (1.003 **  GAME_DIFFICULTY)
-        self.damage = 1.69 * (1.003 **  GAME_DIFFICULTY)
+        self.health = 3 * (1.05 **  GAME_DIFFICULTY)
+        self.speed = 1.9 * (1.03 **  GAME_DIFFICULTY)
+        self.damage = 1.69 * (1.03 **  GAME_DIFFICULTY)
         self.last_attack = 0
         self.attack_cooldown = 1500
         # self.dying_sound = pygame.mixer.Sound(dying_sound)

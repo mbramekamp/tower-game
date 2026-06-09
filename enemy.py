@@ -13,21 +13,22 @@ class Enemy(pygame.sprite.Sprite):
     last_attack: int
     attack_cooldown: int
 
-    def __init__(self, dying_sound):
+    def __init__(self, dying_sound, image, GAME_DIFFICULTY):
 
         super().__init__()
 
-        self.health = 3
-        self.speed = 2.4
-        self.damage = 3.1415
+        self.health = 3 * (1.003 **  GAME_DIFFICULTY)
+        self.speed = 1.9 * (1.003 **  GAME_DIFFICULTY)
+        self.damage = 1.69 * (1.003 **  GAME_DIFFICULTY)
         self.last_attack = 0
         self.attack_cooldown = 1500
         # self.dying_sound = pygame.mixer.Sound(dying_sound)
 
-        self.image = pygame.Surface((25, 25))
+        self.image = pygame.image.load(image)
+        self.image = pygame.transform.scale(self.image, (50, 50))
         self.rect = self.image.get_rect()
 
-        pygame.draw.rect(self.image, "red", ((0,0),(25, 25)))
+        # pygame.draw.rect(self.image, "red", ((0,0),(25, 25)))
 
     def update(self, player: Player):
 
@@ -55,11 +56,11 @@ class Enemy(pygame.sprite.Sprite):
     def take_damage(self, amount):
         if amount > self.health:
             self.health = 0
-            # self.dying_sound.play()
             self.kill()
+            return True
         else:
             self.health -= amount
-
+            return False
 
     
     def deal_damage(self, player: Player):

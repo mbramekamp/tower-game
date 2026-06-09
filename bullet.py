@@ -12,12 +12,13 @@ class Bullet(pygame.sprite.Sprite):
     y: int
     
 
-    def __init__(self, target, x, y):
+    def __init__(self, target, player, x, y, damage):
 
         super().__init__()
-        self.damage = 5
-        self.speed = 13
+        self.damage = damage
+        self.speed = 15
         self.target = target
+        self.player = player
         
         self.image = pygame.Surface((5,5))
         self.rect = self.image.get_rect()
@@ -47,8 +48,9 @@ class Bullet(pygame.sprite.Sprite):
 
         if directional_vector.length() < self.speed:
             if self.target.alive():
-                self.target.take_damage(self.damage)
-
+                target_dead = self.target.take_damage(self.damage)
+                if target_dead:
+                    self.player.coins += 1
             self.kill()
         elif not self.target.alive():
             self.kill()

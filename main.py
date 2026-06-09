@@ -48,11 +48,12 @@ player.rect.centerx = screen.get_width() / 2
 player.rect.centery = screen.get_height() / 2
 
 last_enemy_spawn = 0
+background = pygame.image.load("cobble.png")
 
-
-HEALTH_HUD = pygame.font.SysFont(None, 20, False, False)
-COIN_HUD = pygame.font.SysFont(None, 20, False, False)
-ARMOUR_HUD = pygame.font.SysFont(None, 20, False, False)
+HEALTH_HUD = pygame.font.SysFont(None, 30,False, False)
+COIN_HUD = pygame.font.SysFont(None, 30, False, False)
+ARMOUR_HUD = pygame.font.SysFont(None, 30, False, False)
+TIMER = pygame.font.SysFont(None, 30, False, False)
 
 
 while running:
@@ -60,7 +61,11 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
-    screen.fill("black")
+    # screen.fill("black")
+    screen.blit(background, (0, 0))
+
+    GAME_TIME = pygame.time.get_ticks() // 1000
+    GAME_DIFFICULTY = pygame.time.get_ticks() // 60000
 
     if(pygame.time.get_ticks() - last_enemy_spawn) > SPAWNING_COOLDOWN:
 
@@ -73,16 +78,20 @@ while running:
 
         spawn_point = random.choice(SPAWN_POINT_LIST)
 
-        enemy = Enemy("bubble pop.mp3")
+        enemy = Enemy("bubble pop.mp3", "enemy.png", GAME_DIFFICULTY)
         enemy.rect.x = spawn_point[0]
         enemy.rect.y = spawn_point[1]
         enemy_group.add(enemy)
         last_enemy_spawn = pygame.time.get_ticks()
 
 
-    screen.blit(HEALTH_HUD.render(str(player.health), antialias=True, color="white"), (0, 0))
+    screen.blit(HEALTH_HUD.render("HEALTH:" + str(f"{player.health:.1f}"), antialias=True, color="white"), (0, 0))
+    screen.blit(ARMOUR_HUD.render("ARMOUR:" + str(f"{player.armour:.1f}"), antialias=True, color="white"), (0, 40))
+    screen.blit(COIN_HUD.render("COINS:" + str(player.coins), antialias=True, color="white"), (0, 80))
+    screen.blit(TIMER.render(str(GAME_TIME), antialias=True, color="white"),(750, 0))
 
     screen.blit(player.image, player.rect)
+    running = player.update()
     player.shoot(enemy_group, bullet_group)
 
     enemy_group.draw(screen)
@@ -90,6 +99,14 @@ while running:
 
     bullet_group.draw(screen)
     bullet_group.update()
+
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_h]:
+        player.upgrade_health()
+    if keys[pygame.K_a]:
+        player.upgrade_armour()
+    if keys[pygame.K_d]:
+        player.upgrade_damage()
 
     clock.tick(60)
 

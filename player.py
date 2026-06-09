@@ -10,6 +10,7 @@ class Player(pygame.sprite.Sprite):
     coins: int 
     health: float 
     armour: float
+    damage: float
     last_shot:  int
     radius: int
     shoot_sound: pygame.mixer.Sound
@@ -22,9 +23,10 @@ class Player(pygame.sprite.Sprite):
 
         self.coins = 0
         self.health = 10
-        self.armour = 0
+        self.armour = 1
         self.last_shot = 0
-        self.radius = 250
+        self.radius = 350
+        self.damage = 3.23
         self.shoot_sound = pygame.mixer.Sound(sound_file)
         
         # Bestimmt die Oberfläche bzw. quasi die Hitbox des Sprites
@@ -35,13 +37,17 @@ class Player(pygame.sprite.Sprite):
         pygame.draw.rect(self.image, "green", ((0, 0),(50, 50)), 0)
         
     def update(self):
-        pass
+        if self.health <= 0:
+            self.kill()
+            return False
+        return True
 
     def upgrade_health(self):
         if self.coins > 20:
             self.health = self.health + (self.health * 0.035)
+            self.coins -= 20
         else:
-            return "Insufficient funds."
+            print("Insufficient funds.")
 
     def upgrade_armour(self):
 
@@ -49,22 +55,31 @@ class Player(pygame.sprite.Sprite):
 
         if self.coins > 25:
             self.armour = min(self.armour + (self.armour * 0.012), 100)
+            self.coins -= 25
         else:
-            return "Insufficient funds."
+            print("Insufficient funds.")
+
+    def upgrade_damage(self):
+        if self.coins > 10:
+            self.damage *= 1.04
+            self.coins -= 10
+        else:
+            print("Insufficient funds.")
 
     def take_damage(self, amount):
         damage_taken =  amount - (amount * (self.armour / 100))
         if damage_taken > self.health:
             self.health = 0
-            return "game over"
-        
+            return False
+        print("Damage taken")
         self.health -= damage_taken
+        return True
 
     def shoot(self, enemy_group, bullet_group):
         nearest_enemy = self.check_nearest_enemy(enemy_group)
         if nearest_enemy is not None:
             if(pygame.time.get_ticks() - self.last_shot) > SHOT_COOLDOWN:
-                bullet = Bullet(nearest_enemy, self.rect.centerx, self.rect.centery)
+                bullet = Bullet(nearest_enemy, self, self.rect.centerx, self.rect.centery, self.damage)
                 self.shoot_sound.play()
                 bullet_group.add(bullet)
                 self.last_shot = pygame.time.get_ticks()
